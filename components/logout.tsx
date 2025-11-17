@@ -1,25 +1,57 @@
 "use client"
 
 import { authClient } from "@/lib/auth-client";
-import { redirect } from "next/navigation";
-
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const Logout = () => {
+    const router = useRouter();
+    const { data: session, isPending } = authClient.useSession();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     async function handleLogout() {
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    redirect("/auth/login"); // redirect to login page
+        setIsLoggingOut(true);
+        try {
+            await authClient.signOut({
+                fetchOptions: {
+                    onSuccess: () => {
+                        router.push("/auth/login");
+                        router.refresh();
+                    },
                 },
-            },
-        });
-
+            });
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
+            setIsLoggingOut(false);
+        }
     }
 
-  return (
-    <button onClick={handleLogout}>Logout</button>
-  )
-}
+    function handleLogin() {
+        router.push("/auth/login");
+    }
 
-export default Logout
+    const handleAuthAction = () => {
+        if (session) {
+            handleLogout();
+        } else {
+            handleLogin();
+        }
+    };
+
+    // Show loading state
+    if (isPending) {
+        return <button disabled></button>;
+    }
+
+    return (
+        <button 
+            onClick={handleAuthAction}
+            disabled={isLoggingOut}
+        >
+            {isLoggingOut ? "Logging out..." : session ? "Logout" : "Login"}
+        </button>
+    );
+};
+
+export default Logout;
