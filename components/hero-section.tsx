@@ -12,6 +12,8 @@ import { Logo } from '@/components/logo'
 import { ArrowRight, Menu, Rocket, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeSwitcher } from './kibo-ui/theme-switcher'
+import Logout from './logout'
+import { authClient } from '@/lib/auth-client'
 
 const menuItems = [
     { name: 'FAQs', href: '#faq' },
@@ -20,6 +22,16 @@ const menuItems = [
 
 export default function HeroSection() {
     const [menuState, setMenuState] = React.useState(false)
+
+
+    const { 
+        data: session, 
+        isPending, //loading state
+        error, //error object
+        refetch //refetch the session
+    } = authClient.useSession() 
+
+
 
     return (
         <>
@@ -62,7 +74,8 @@ export default function HeroSection() {
                                 </div>
                                         <ThemeSwitcher/>
                                 <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit lg:border-l lg:pl-6">
-                                    <Button
+                                    <Logout/>
+                                    {/* <Button
                                         asChild
                                         variant="outline"
                                         size="sm">
@@ -76,7 +89,7 @@ export default function HeroSection() {
                                         <Link href="#">
                                             <span>Signup</span>
                                         </Link>
-                                    </Button>
+                                    </Button> */}
                                 </div>
                             </div>
                         </div>
@@ -108,7 +121,7 @@ export default function HeroSection() {
                                     <Button
                                         size="lg"
                                         asChild>
-                                        <Link href="#">
+                                        <Link href="/dashboard">
                                             <Rocket className="relative size-4" />
                                             <span className="text-nowrap">Create now</span>
                                         </Link>

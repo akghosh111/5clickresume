@@ -1,14 +1,67 @@
+"use client"
 import { LogoIcon } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { authClient } from '@/lib/auth-client'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+
+    
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+        const { data, error } = await authClient.signIn.email(
+        {
+            email,
+            password,
+            callbackURL: "/dashboard",
+            rememberMe: true,
+        },
+        {
+            onSuccess: () => {
+            redirect("/dashboard")
+            },
+            onError: (ctx) => {
+            console.error("Signin error:", ctx);
+            },
+        }
+        );
+
+        console.log("data", data);
+    }
+
+    // const { 
+    //     data: session, 
+    //     isPending, //loading state
+    //     error, //error object
+    //     refetch //refetch the session
+    // } = authClient.useSession() 
+
+    // useEffect(() => {
+    //     if(session){
+    //         redirect("/dashboard");
+    //     }
+    // }, [session])
+
+    const handleGoogleSignIn = async () => {
+        const data = await authClient.signIn.social({
+        provider: "google",
+        });
+        console.log("google signin", data);
+    };
+
     return (
         <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
             <form
-                action=""
+                onSubmit={handleSubmit}
                 className="max-w-92 m-auto h-fit w-full">
                 <div className="p-6">
                     <div>
@@ -66,10 +119,27 @@ export default function Login() {
                                 required
                                 name="email"
                                 id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="email"
+                                className="block text-sm">
+                                Email
+                            </Label>
+                            <Input
+                                type="password"
+                                required
+                                name="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
 
-                        <Button className="w-full">Continue</Button>
+                        <Button className="w-full">Login</Button>
                     </div>
                 </div>
 
@@ -78,8 +148,9 @@ export default function Login() {
                     <Button
                         asChild
                         variant="link"
-                        className="px-2">
-                        <Link href="/signup">Create account</Link>
+                        className="px-2"
+                        onClick={handleGoogleSignIn}>
+                        Create Account
                     </Button>
                 </p>
             </form>

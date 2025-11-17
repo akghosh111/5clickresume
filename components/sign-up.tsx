@@ -1,14 +1,65 @@
+"use client"
 import { LogoIcon } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { authClient } from '@/lib/auth-client'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { RedirectType } from 'next/navigation'
+import { useState } from 'react'
+
+
+
 
 export default function LoginPage() {
+    const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
+    const [password, setPassword] = useState("");
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const { data, error } = await authClient.signUp.email({
+            name: name, // required
+            email: email, // required
+            password: password, // required
+            callbackURL: "/dashboard",
+        },
+        {
+            onRequest: () => {
+            // show loading
+            },
+            onSuccess: () => {
+             redirect("/dashboard")
+            },
+            onError: (ctx) => {
+            console.log("err", ctx);
+            },
+        }
+     );
+     console.log("data", data, "error", error);
+    }
+
+    const handleGoogleSignUp = async () => {
+        const data = await authClient.signIn.social({
+        provider: "google",
+        });
+        console.log("data", data);
+    };
+
+    // const handleGithubSignUp = async () => {
+    //     const data = await authClient.signIn.social({
+    //         provider: "github"
+    //     });
+    //     console.log("data", data);
+    // };
+
+
     return (
         <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
             <form
-                action=""
+                onSubmit={handleSubmit}
                 className="max-w-92 m-auto h-fit w-full">
                 <div className="p-6">
                     <div>
@@ -25,7 +76,8 @@ export default function LoginPage() {
                         <Button
                             type="button"
                             variant="outline"
-                            className="w-full">
+                            className="w-full"
+                            onClick={handleGoogleSignUp}>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="0.98em"
@@ -57,6 +109,21 @@ export default function LoginPage() {
                     <div className="space-y-6">
                         <div className="space-y-2">
                             <Label
+                                htmlFor="name"
+                                className="block text-sm">
+                                Name
+                            </Label>
+                            <Input
+                                type="name"
+                                required
+                                name="name"
+                                id="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label
                                 htmlFor="email"
                                 className="block text-sm">
                                 Email
@@ -66,6 +133,23 @@ export default function LoginPage() {
                                 required
                                 name="email"
                                 id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="password"
+                                className="block text-sm">
+                                Password
+                            </Label>
+                            <Input
+                                type="password"
+                                required
+                                name="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
 
@@ -79,7 +163,7 @@ export default function LoginPage() {
                         asChild
                         variant="link"
                         className="px-2">
-                        <Link href="/login">Sign In</Link>
+                        <Link href="/auth/login">Sign In</Link>
                     </Button>
                 </p>
             </form>
